@@ -8,23 +8,13 @@ from dotenv import load_dotenv
 from autogen.agentchat.contrib.web_surfer import WebSurferAgent
 from autogen.browser_utils import RequestsMarkdownBrowser
 import sys
+from web_search import search_the_web, extract_relevant_info
 
 load_dotenv()
 
 class CustomAgent(ConversableAgent):
     def search_the_web(self, query):
-        subscription_key = os.environ['BING_API_KEY']
-        endpoint = "https://api.bing.microsoft.com/v7.0/search"
-        mkt = 'en-US'
-        params = {'q': query, 'mkt': mkt}
-        headers = {'Ocp-Apim-Subscription-Key': subscription_key}
-
-        try:
-            response = requests.get(endpoint, headers=headers, params=params)
-            response.raise_for_status()
-            return response.json()
-        except Exception as ex:
-            raise ex
+        return search_the_web(query)
 
 def initiate_chat(self, group_chat_manager, message, summary_method, search_web=False):
     if search_web:
@@ -53,12 +43,6 @@ def trim_messages(messages):
     if len(messages) > MAX_MESSAGES:
         return messages[-MAX_MESSAGES:]  # Keep only the last 20 messages
     return messages
-
-def extract_relevant_info(search_results):
-    extracted = []
-    for result in search_results.get('webPages', {}).get('value', []):
-        extracted.append(f"{result['name']}: {result['snippet']}")
-    return extracted[:5]  # Limit to top 5 results
 
 browser = {"viewport_size": 4096, "bing_api_key": os.environ["BING_API_KEY"]}
 
